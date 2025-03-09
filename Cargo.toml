@@ -1,0 +1,8 @@
+[package]
+name = "multiaddrx"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+multiaddr = "0.18.2"
+url = "2.5.4"
