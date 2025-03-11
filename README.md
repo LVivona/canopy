@@ -35,10 +35,6 @@ pub enum Node<T> {
 Canopy uses Rust’s `Rc<RefCell<T>>` pattern to enable shared mutability and ownership, which makes it well-suited for managing dynamic, tree-like data.
 
 
-### Closing Remarks
-
-This project is also a personal experiment to apply best practices in developing safety-critical code. By adhering to the "Power of 10" rules for writing safe and reliable systems, the goal is to create robust, memory-safe code while exploring the depths of Rust’s safety features.
-
 ## Features
 
 - Tree-based structure with mutable and shared ownership via `Rc<RefCell<T>>`.
@@ -62,9 +58,7 @@ canopy = { git = "https://github.com/LVivona/canopy", branch = "main" }
 
 ```
 
-## Usage
-
-Example usage:
+## Example
 
 ```rust
 use canopy::{Node, NodeRef};
@@ -73,6 +67,6 @@ let root = Node::Parent { value: 1, prev: None, next: None };
 let child = Node::Leaf { value: 2 };
 ```
 
----
+### Closing Remarks
 
-This should cover the essentials of your project and provide clear guidance for potential users or contributors!
+This project is also a personal experiment to apply best practices in developing safety-critical code. By adhering to the "Power of 10" rules for writing safe and reliable systems, the goal is to create robust, memory-safe code while exploring the depths of Rust’s safety features.
