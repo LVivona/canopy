@@ -400,7 +400,7 @@ impl<T> Node<T> {
     ///
     /// ### Returns
     /// - A result of a [`bool`]: where `true` If the child was successfully removed.
-    /// and `false` If the child was not found among this node's children.
+    ///   and `false` If the child was not found among this node's children.
     /// 
     /// If removing the child results in an empty parent, the parent **downgrades** into a [`Node::Leaf`].
     ///
