@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
-- *(readme)* update readme with iter feature completed
+- *(readme)* Update readme with iter feature completed
 
 ## [0.0.1] - 2025-03-11
 
