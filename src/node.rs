@@ -1,9 +1,7 @@
 #![allow(dead_code)]
 use crate::error::NodeError;
 use std::{
-    cell::RefCell,
-    fmt::{Debug, Display},
-    rc::Rc,
+    cell::RefCell, collections::VecDeque, fmt::{Debug, Display}, rc::Rc
 };
 
 /// A reference-counted, mutable reference to a `Node<T>`.
@@ -466,6 +464,46 @@ impl<T> From<Node<T>> for NodeRef<T> {
     }
 }
 
+impl<T> Node<T> {
+    pub fn iter(node : NodeRef<T>) -> NodeIter<T> {
+        NodeIter::new(node)
+    }
+}
+
+struct NodeIter<T> {
+    queue : VecDeque<NodeRef<T>>
+}
+
+impl<T> NodeIter<T>{
+    fn new(node : NodeRef<T>) -> NodeIter<T> {
+        let mut queue = VecDeque::new();
+        queue.push_back(node);
+        NodeIter { queue }
+    }
+}
+
+impl<T> std::iter::Iterator for NodeIter<T> {
+    type Item = NodeRef<T>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(item) = self.queue.pop_front() {
+            
+            match &*item.clone().borrow() {
+                Node::Parent { next , ..} => {
+                    self.queue.extend(next.clone());
+                    Some(item)
+                },
+                _ => {
+                    None
+                }
+            }
+            
+        } else {
+            None
+        }
+        
+    }
+}
+
 #[cfg(test)]
 mod test {
 
@@ -597,6 +635,24 @@ mod test {
 
         println!("{}", root.borrow());
         println!("{}", leaf.borrow());
+        Ok(())
+    }
+
+    #[test]
+    fn test_iter_method() -> Result<(), NodeError> {
+        let root = Node::parent(1);
+        let child = Node::insert(&root, 2)?;
+        let _ = Node::insert(&root, 3)?;
+        let _ = Node::insert(&root, 4)?;
+        let _ = Node::insert(&child, 5)?;
+
+        let mut counter = 1;
+        let mut iterator = Node::iter(root);
+        while let Some(item) = iterator.next() {
+            assert!(item.borrow().value().eq(&counter));
+            counter += 1;
+        }
+
         Ok(())
     }
 }
