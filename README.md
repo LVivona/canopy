@@ -5,6 +5,10 @@
     <img alt="Canopy" src=".github/assets/banner.png" style="max-width: 100%;">
   </picture>
   <br/>
+
+  <sub>
+    8-bit Ferris by <a href="https://users.rust-lang.org/t/ferris-as-an-8-bit-sprite/25346">YakoYakoYokuYoku & ryanobeirne</a>
+  </sub>
   <br/>
 </p>
 
@@ -13,27 +17,26 @@
 
 </p>
 
-
 Canopy is a small tree-based data structure implemented in Rust. It provides a way to model hierarchical relationships with two types of nodes: `Node::Parent` and `Node::Leaf`. The structure is defined as follows:
 
 ```rust
-pub enum Node<T> {
+enum Node<T> {
     Leaf {
+        prev: Option<NodeRef<T>>,
         value: T,
     },
     Parent {
         value: T,
         prev: Option<NodeRef<T>>,
-        next: Option<Vec<NodeRef<T>>>,
+        next: Vec<NodeRef<T>>,
     },
 }
 ```
 
 - **`Node::Parent`** nodes hold references to their children and optionally to their parents, along with their own value.
-- **`Node::Leaf`** nodes store just a value and do not have any children or parents, making them terminal points in the tree structure. Though leaf nodes may also be able to be upgraded to **`Node::Parents`** allowing them to have children.
+- **`Node::Leaf`** nodes store just a value and do not have any children, making them terminal points in the tree structure. Though leaf nodes may also be able to be upgraded to **`Node::Parents`** allowing them to have children.
 
 Canopy uses Rust’s `Rc<RefCell<T>>` pattern to enable shared mutability and ownership, which makes it well-suited for managing dynamic, tree-like data.
-
 
 ## Features
 
@@ -46,7 +49,7 @@ Canopy uses Rust’s `Rc<RefCell<T>>` pattern to enable shared mutability and ow
 - [ ] Implement tracing
 - [ ] Support `#[no_std]`
 - [ ] Implement `Box` pattern
-
+- [ ] Iter
 
 ## Installation
 
@@ -63,8 +66,9 @@ canopy = { git = "https://github.com/LVivona/canopy", branch = "main" }
 ```rust
 use canopy::{Node, NodeRef};
 
-let root = Node::Parent { value: 1, prev: None, next: None };
-let child = Node::Leaf { value: 2 };
+let root = Node::Parent(1)
+let child = Node::insert(&root, 2);
+let child2 = Node::insert(&root, 3);
 ```
 
 ### Closing Remarks
