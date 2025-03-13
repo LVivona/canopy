@@ -61,12 +61,58 @@ canopy = { git = "https://github.com/LVivona/canopy", branch = "main" }
 
 ## Example
 
+
+### Insert
+
+lets create a smiple graph structure. such as the one below.
+
+```mermaid
+graph TD;
+    root-->child;
+    root-->child2;
+    child2-->grand_child1;
+    child2-->grand_child2;
+```
 ```rust
 use canopy::{Node, NodeRef};
 
-let root = Node::Parent(1)
-let child = Node::insert(&root, 2);
-let child2 = Node::insert(&root, 3);
+let root   : NodeRef<u8> = Node::Parent(1)
+// child is now a Node::Leaf that points to root.
+let child  : NodeRef<u8> = Node::insert(&root, 2)?;
+// child2 is now a Node::Leaf that points to root.
+let child2 : NodeRef<u8> = Node::insert(&root, 3)?;
+
+// child2 is now a upgraded to Node::Parent that points to root,
+// and Node::Leaf grand_child1.
+let grand_child1 : NodeRef<u8> = Node::insert(&child2, 4)?;
+// child2 is pushed ``Node::Leaf``
+let grand_child2 : NodeRef<u8> = Node::insert(&child2, 5)?;
+```
+
+### Pop
+```rust
+// above code..
+Node::pop(&child2, &grand_child1)?;
+Node::pop(&child2, &grand_child2)?;
+// popped out both children of child2; child2 is now a back to a leaf node.
+```
+
+### Iter
+
+```rust
+use canopy::{Node, NodeRef, NodeIter};
+
+let root   : NodeRef<u8> = Node::Parent(1)
+let child  : NodeRef<u8> = Node::insert(&root, 2);
+let child2 : NodeRef<u8> = Node::insert(&root, 3);
+let grand_child1 : NodeRef<u8> = Node::insert(&child2, 4);
+let grand_child2 : NodeRef<u8> = Node::insert(&child2, 5);
+
+let mut nodes : NodeIter<u8> = Node::iter(&root);
+while let Some(node) = node.next() {
+  println!("{}", node.boarrow().value());
+}
+
 ```
 
 ### Closing Remarks
