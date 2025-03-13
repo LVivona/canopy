@@ -1,6 +1,6 @@
 <p align="center">
   <picture>
-    <img alt="Canopy" src=".github/assets/banner.png" style="max-width: 100%;">
+    <img alt="Canopy" src="https://github.com/LVivona/canopy/blob/main/.github/assets/banner.png?raw=true" style="max-width: 100%;">
   </picture>
   <br/>
 
