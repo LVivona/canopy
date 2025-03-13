@@ -1,5 +1,3 @@
-<h1>Canopy</h1>
-
 <p align="center">
   <picture>
     <img alt="Canopy" src=".github/assets/banner.png" style="max-width: 100%;">
