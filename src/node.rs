@@ -1,20 +1,28 @@
 #![allow(dead_code)]
 use crate::error::NodeError;
 
-
-#[cfg(not(feature = "std"))]
-use rclite::Rc;
 #[cfg(not(feature = "std"))]
 use core::{
-    cell::RefCell, fmt::{Debug, Display}, mem, fmt
+    cell::RefCell,
+    fmt,
+    fmt::{Debug, Display},
+    mem,
 };
+#[cfg(not(feature = "std"))]
+use rclite::Rc;
+use tracing::instrument;
 
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
 #[cfg(feature = "std")]
 use std::{
-    cell::RefCell, collections::VecDeque, fmt::{Debug, Display}, rc::Rc, mem, fmt
+    cell::RefCell,
+    collections::VecDeque,
+    fmt,
+    fmt::{Debug, Display},
+    mem,
+    rc::Rc,
 };
 
 /// A reference-counted, mutable reference to a `Node<T>`.
@@ -120,10 +128,13 @@ where
     }
 }
 
-impl<T> Node<T> {
-   
+impl<T> Node<T>
+where
+    T: Debug,
+{
     /// Create [`Node::Parent`] instance
     #[inline]
+    #[instrument(level = "trace")]
     pub fn parent(value: T) -> NodeRef<T> {
         Rc::new(RefCell::new(Node::Parent {
             value,
@@ -134,6 +145,7 @@ impl<T> Node<T> {
 
     /// Create [`Node::Leaf`] instance
     #[inline]
+    #[instrument(level = "trace")]
     pub fn leaf(value: T, prev: Option<NodeRef<T>>) -> NodeRef<T> {
         Rc::new(RefCell::new(Node::Leaf { value, prev }))
     }
@@ -142,7 +154,7 @@ impl<T> Node<T> {
     ///
     /// # Parameters:
     /// - `parent`: A reference-counted node that will be converted.
-    /// - `node`: A reference-counted node that 
+    /// - `node`: A reference-counted node that
     ///
     /// # Return:
     /// - Result where on success empty tuple, and [`NodeError::ParentUpgradeNotAllowed`] if the node is already a [`Node::Parent`].
@@ -156,9 +168,10 @@ impl<T> Node<T> {
     /// Node::upgrade(&leaf, &child)?;
     /// ```
     #[inline]
+    #[instrument(level = "trace")]
     pub fn upgrade(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError>
     where
-        T: Default + Clone,
+        T: Debug + Default + Clone,
     {
         parent.borrow_mut().upgrade_inner(node)
     }
@@ -187,9 +200,9 @@ impl<T> Node<T> {
     ///
     /// ### Parameters
     /// `node`: refrence count to the orginal node that will be downgraded to [`Node::Leaf`]
-    /// 
+    ///
     /// ### Return
-    /// Result of an empty tuple on success and 
+    /// Result of an empty tuple on success and
     /// [`NodeError::DowngradeNotParent`] if the node is already a [`Node::Leaf`],
     /// and [`NodeError::IllegalDowngradeWithChildren`] if node is still has children.
     ///
@@ -204,9 +217,10 @@ impl<T> Node<T> {
     /// Node::pop(&child, &gc)?;
     /// ```
     #[inline]
+    #[instrument(level = "trace")]
     pub fn downgrade(node: &NodeRef<T>) -> Result<(), NodeError>
     where
-        T: Default,
+        T: Default + Debug,
     {
         node.borrow_mut().downgrade_inner()
     }
@@ -240,7 +254,6 @@ impl<T> Node<T> {
 }
 
 impl<T> Node<T> {
-   
     /// Check if node is specific [`Node::Parent`] instance that classify a root node.
     /// ### Classify A Root
     /// - prev is None
@@ -289,7 +302,7 @@ impl<T> Node<T> {
         }
     }
 
-    /// ### Return 
+    /// ### Return
     /// - `bool` that checks if Node instance has children
     #[inline]
     pub fn has_children(&self) -> bool {
@@ -309,7 +322,7 @@ impl<T> Node<T> {
         }
     }
 
-    /// ### Return 
+    /// ### Return
     /// - list of [`NodeRef<T>`]
     #[inline]
     pub fn children(&self) -> &[NodeRef<T>] {
@@ -356,13 +369,16 @@ impl<T> Node<T> {
     }
 }
 
-impl<T> Node<T> {
+impl<T> Node<T>
+where
+    T: Debug + Default + Clone,
+{
     /// Insert [`Node`] with value T within the [`Node`]
     ///
     /// ### Parameters
-    /// - `parent`: A refrence to the Node to which will add child to. 
+    /// - `parent`: A refrence to the Node to which will add child to.
     /// - `value`: A generic value type.
-    /// 
+    ///
     /// ### Return
     /// - Result of a [`NodeRef<T>`] to the newly inserted child node, or [`NodeError::ParentUpgradeNotAllowed`] if the node is already a `Parent`.
     ///
@@ -373,17 +389,12 @@ impl<T> Node<T> {
     /// let _ = Node::insert(child1, 3)?;
     /// let _ = Node::insert(child1, 4)?;
     /// ```
-    pub fn insert(parent: &NodeRef<T>, value: T) -> Result<NodeRef<T>, NodeError>
-    where
-        T: Default + Clone + Copy,
-    {
+    #[instrument(level = "info")]
+    pub fn insert(parent: &NodeRef<T>, value: T) -> Result<NodeRef<T>, NodeError> {
         Node::inner_insert(parent, value)
     }
 
-    fn inner_insert(parent: &NodeRef<T>, value: T) -> Result<NodeRef<T>, NodeError>
-    where
-        T: Default + Clone + Copy,
-    {
+    fn inner_insert(parent: &NodeRef<T>, value: T) -> Result<NodeRef<T>, NodeError> {
         // Create the new child node with a reference to its parent
         let node = Node::leaf(value, Some(parent.clone()));
 
@@ -408,13 +419,13 @@ impl<T> Node<T> {
     /// Removes a child node from its parent [`Node::Parent`].
     ///
     /// ### Parameters
-    /// - `parent`: A refrence to the Node to which will add child to. 
+    /// - `parent`: A refrence to the Node to which will add child to.
     /// - `child`: A reference to the child node to be removed.
     ///
     /// ### Returns
     /// - A result of a [`bool`]: where `true` If the child was successfully removed.
     ///   and `false` If the child was not found among this node's children.
-    /// 
+    ///
     /// If removing the child results in an empty parent, the parent **downgrades** into a [`Node::Leaf`].
     ///
     /// # Example
@@ -426,6 +437,7 @@ impl<T> Node<T> {
     /// let result = Node::pop(&child, &grand_child)?;
     /// assert!(result); // Successfully removed
     /// ```
+    #[instrument(level = "trace")]
     pub fn pop(parent: &NodeRef<T>, child: &NodeRef<T>) -> Result<bool, NodeError>
     where
         T: Default + Clone + Copy,
@@ -477,21 +489,20 @@ impl<T> From<Node<T>> for NodeRef<T> {
     }
 }
 
-
 impl<T> Node<T> {
-    pub fn iter(node : NodeRef<T>) -> NodeIter<T> {
+    pub fn iter(node: NodeRef<T>) -> NodeIter<T> {
         NodeIter::new(node)
     }
 }
 
 #[cfg(feature = "std")]
 pub struct NodeIter<T> {
-    queue : VecDeque<NodeRef<T>>
+    queue: VecDeque<NodeRef<T>>,
 }
 
 #[cfg(feature = "std")]
-impl<T> NodeIter<T>{
-    pub fn new(node : NodeRef<T>) -> NodeIter<T> {
+impl<T> NodeIter<T> {
+    pub fn new(node: NodeRef<T>) -> NodeIter<T> {
         let mut queue = VecDeque::new();
         queue.push_back(node);
         NodeIter { queue }
@@ -503,21 +514,16 @@ impl<T> std::iter::Iterator for NodeIter<T> {
     type Item = NodeRef<T>;
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(item) = self.queue.pop_front() {
-            
             match &*item.clone().borrow() {
-                Node::Parent { next , ..} => {
+                Node::Parent { next, .. } => {
                     self.queue.extend(next.clone());
                     Some(item)
-                },
-                _ => {
-                    None
                 }
+                _ => None,
             }
-            
         } else {
             None
         }
-        
     }
 }
 

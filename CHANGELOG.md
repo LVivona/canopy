@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
+- Add simple tracing
 - Add support for no_std
 - Add changelog & cliff
 - Allow for leaf to contain ref to parent

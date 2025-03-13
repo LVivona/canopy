@@ -46,7 +46,7 @@ Canopy uses Rust’s `Rc<RefCell<T>>` pattern to enable shared mutability and ow
 
 ### Future Features
 
-- [ ] Implement tracing
+- [x] Implement tracing
 - [x] Support `#[no_std]`
 - [ ] Implement `Box` pattern
 - [x] Iter ``NodeIter<T>``
