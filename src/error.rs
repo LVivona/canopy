@@ -1,6 +1,12 @@
 /// Represents the different errors that can occur while working with a `Node`.
 /// These errors are used to indicate issues with node manipulation, such as upgrading or downgrading a node,
 /// or when a node does not meet the expected type (e.g., leaf, parent, root).
+#[cfg(not(feature = "std"))]
+use core::{fmt, error::Error};
+
+#[cfg(feature = "std")]
+use std::{fmt, error::Error};
+
 #[derive(Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum NodeError {
@@ -37,8 +43,8 @@ pub enum NodeError {
 }
 
 
-impl std::fmt::Display for NodeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for NodeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::ParentUpgradeNotAllowed => write!(f, "Upgrage failure Node was not not a leaf"),
             Self::DowngradeNotParent => write!(f, "Downgrade failure Node was not not a parent"),
@@ -54,4 +60,4 @@ impl std::fmt::Display for NodeError {
     }
 }
 
-impl std::error::Error for NodeError {}
+impl Error for NodeError {}

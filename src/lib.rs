@@ -19,11 +19,16 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#![doc = include_str!("../README.md")]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[macro_use]
+extern crate alloc;
+
 pub mod error;
 mod node;
 
 pub use crate::node::{Node, NodeRef};
-
 
 
 #[cfg(test)]
@@ -37,8 +42,9 @@ mod test {
         assert!(node.borrow().is_root())
     }
 
+
     #[test]
-    fn node_parent_creation_leaf() -> Result<(), Box<dyn std::error::Error>> {
+    fn node_parent_creation_leaf() -> Result<(), NodeError> {
         
         let parent = Node::parent(true);
         let node = Node::leaf(true, Some(parent.clone()));
@@ -151,6 +157,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn dispaly() -> Result<(), NodeError> {
         let root = Node::parent(42);
         let leaf = Node::insert(&root, 420)?;
@@ -171,7 +178,7 @@ mod test {
         let mut counter = 1;
         let mut iterator = Node::iter(root);
         while let Some(item) = iterator.next() {
-            assert!(item.borrow().value().eq(&counter));
+            assert!(item.borrow_mut().value().eq(&counter));
             counter += 1;
         }
 

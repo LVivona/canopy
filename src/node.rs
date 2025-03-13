@@ -1,7 +1,20 @@
 #![allow(dead_code)]
 use crate::error::NodeError;
+
+
+#[cfg(not(feature = "std"))]
+use rclite::Rc;
+#[cfg(not(feature = "std"))]
+use core::{
+    cell::RefCell, fmt::{Debug, Display}, mem, fmt
+};
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+
+#[cfg(feature = "std")]
 use std::{
-    cell::RefCell, collections::VecDeque, fmt::{Debug, Display}, rc::Rc
+    cell::RefCell, collections::VecDeque, fmt::{Debug, Display}, rc::Rc, mem, fmt
 };
 
 /// A reference-counted, mutable reference to a `Node<T>`.
@@ -76,7 +89,7 @@ impl<T> Debug for Node<T>
 where
     T: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Leaf { value, .. } => f.debug_struct("Leaf").field("value", value).finish(),
             Self::Parent { value, prev, next } => f
@@ -93,7 +106,7 @@ impl<T> Display for Node<T>
 where
     T: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Leaf { value, .. } => write!(f, "Leaf({:?})", value),
             Self::Parent { value, prev, next } => write!(
@@ -157,8 +170,8 @@ impl<T> Node<T> {
         match self {
             Self::Leaf { value, prev } => {
                 // we have a mutable refrence of T, to which we need to
-                let leaf_value = std::mem::take(value);
-                let prev = std::mem::take(prev);
+                let leaf_value = mem::take(value);
+                let prev = mem::take(prev);
                 *self = Self::Parent {
                     value: leaf_value,
                     prev,
@@ -210,7 +223,7 @@ impl<T> Node<T> {
                     return Err(NodeError::IllegalDowngradeWithChildren(children));
                 }
 
-                let parent_value = std::mem::take(value);
+                let parent_value = mem::take(value);
                 if let Some(parent) = prev.take() {
                     *self = Self::Leaf {
                         prev: Some(parent),
@@ -464,16 +477,19 @@ impl<T> From<Node<T>> for NodeRef<T> {
     }
 }
 
+
 impl<T> Node<T> {
     pub fn iter(node : NodeRef<T>) -> NodeIter<T> {
         NodeIter::new(node)
     }
 }
 
+#[cfg(feature = "std")]
 pub struct NodeIter<T> {
     queue : VecDeque<NodeRef<T>>
 }
 
+#[cfg(feature = "std")]
 impl<T> NodeIter<T>{
     pub fn new(node : NodeRef<T>) -> NodeIter<T> {
         let mut queue = VecDeque::new();
@@ -482,6 +498,7 @@ impl<T> NodeIter<T>{
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> std::iter::Iterator for NodeIter<T> {
     type Item = NodeRef<T>;
     fn next(&mut self) -> Option<Self::Item> {
@@ -501,5 +518,38 @@ impl<T> std::iter::Iterator for NodeIter<T> {
             None
         }
         
+    }
+}
+
+#[cfg(not(feature = "std"))]
+pub struct NodeIter<T> {
+    stack: Vec<NodeRef<T>>, // Use Vec instead of VecDeque
+}
+
+#[cfg(not(feature = "std"))]
+impl<T> NodeIter<T> {
+    pub fn new(node: NodeRef<T>) -> NodeIter<T> {
+        let mut stack = Vec::new();
+        stack.push(node);
+        NodeIter { stack }
+    }
+}
+
+#[cfg(not(feature = "std"))]
+impl<T> Iterator for NodeIter<T> {
+    type Item = NodeRef<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(item) = self.stack.pop() {
+            match &*item.clone().borrow() {
+                Node::Parent { next, .. } => {
+                    self.stack.extend(next.clone()); // Push children onto the stack
+                    Some(item)
+                }
+                _ => None,
+            }
+        } else {
+            None
+        }
     }
 }
