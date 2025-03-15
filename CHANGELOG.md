@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.4] - 2025-03-15
+
+### ⚙️ Miscellaneous Tasks
+
+- **(docs)** Update doc for new interface
+- **(readme)** Update installation in readme
+
 ## [0.0.3] - 2025-03-15
 
 ### 🐛 Bug Fixes
