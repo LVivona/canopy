@@ -2,13 +2,23 @@
 name = "canopy"
 version = "0.0.2"
 edition = "2024"
+readme = "README.md"
+license = "MIT"
+license-file = "LICENCE.md"
+authors = ["Luca Vivona"]
+repository = "https://github.com/LVivona/canopy"
+categories = ["data-structures", "memory-management", "algorithms"]
+keywords = ["tree", "data-structure", "rc", "graph", "canopy"]
+description = "Canopy is a lightweight tree-based data structure for Rust, optimized for reference management using Rc and Weak pointers."
+
 
 [dependencies]
 tracing = "0.1.41"
 rclite = "0.2.4"
 
+
 [dev-dependencies]
-tracing-subscriber = {version = "0.3.19", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 
 [features]
 default = ["std"]
