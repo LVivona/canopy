@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/node.rs`."><title>node.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="canopy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">canopy/</div>node.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/node.rs`."><title>node.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="libcanopy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">libcanopy/</div>node.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -590,12 +590,77 @@
 <a href="#589" id="589">589</a>
 <a href="#590" id="590">590</a>
 <a href="#591" id="591">591</a>
-<a href="#592" id="592">592</a></pre></div><pre class="rust"><code><span class="attr">#![allow(dead_code)]
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
+<a href="#626" id="626">626</a>
+<a href="#627" id="627">627</a>
+<a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a></pre></div><pre class="rust"><code><span class="attr">#![allow(dead_code)]
 </span><span class="kw">use </span><span class="kw">crate</span>::error::NodeError;
-<span class="kw">use </span>std::{
+
+<span class="attr">#[cfg(not(feature = <span class="string">"std"</span>))]
+</span><span class="kw">use </span>core::{
     cell::RefCell,
+    fmt,
     fmt::{Debug, Display},
-    rc::Rc,
+    mem,
+    iter::Iterator
+};
+<span class="kw">use </span>alloc::vec;
+<span class="attr">#[cfg(not(feature = <span class="string">"std"</span>))]
+</span><span class="kw">use </span>rclite::Rc;
+<span class="kw">use </span>tracing::instrument;
+
+<span class="attr">#[cfg(not(feature = <span class="string">"std"</span>))]
+</span><span class="kw">use </span>alloc::vec::Vec;
+
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
+</span><span class="kw">use </span>std::{
+    cell::RefCell,
+    fmt,
+    fmt::{Debug, Display},
+    mem,
+    rc::{Rc, Weak},
+    iter::Iterator
 };
 
 <span class="doccomment">/// A reference-counted, mutable reference to a `Node&lt;T&gt;`.
@@ -609,9 +674,36 @@
 ///
 /// # Example:
 /// ```
-/// let node: NodeRef&lt;i32&gt; = Node::leaf(42, None).to_ref();
+/// let node: NodeRef&lt;i32&gt; = Node::leaf(42, None);
 /// ```
 </span><span class="kw">pub type </span>NodeRef&lt;T&gt; = Rc&lt;RefCell&lt;Node&lt;T&gt;&gt;&gt;;
+
+<span class="attr">#[cfg(not(feature = <span class="string">"std"</span>))]
+</span><span class="kw">pub type </span>ParentRc&lt;T&gt; = Rc&lt;T&gt;;
+
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
+</span><span class="kw">pub type </span>ParentRc&lt;T&gt; = Weak&lt;T&gt;;
+
+
+<span class="doccomment">/// A reference-counted specifically to it's parent
+///
+///
+///  ### `no_std`
+/// [`Rc&lt;RefCell&lt;Node&lt;T&gt;&gt;&gt;`] is used because:
+/// - [`Rc&lt;T&gt;`] enables multiple owners.
+/// - [`RefCell&lt;T&gt;`] allows for interior mutability.
+///
+///  ### `std`
+/// [`Weak&lt;RefCell&lt;Node&lt;T&gt;&gt;&gt;`] is used because:
+/// - [`Weak&lt;T&gt;`] non-owning reference.
+/// - [`RefCell&lt;T&gt;`] allows for interior mutability, in case we upgrade [`Weak`] to [`Rc`].
+///
+/// 
+/// # Example:
+/// ```
+/// let node: NodeRef&lt;i32&gt; = Node::leaf(42, None);
+/// ```
+</span><span class="kw">pub type </span>PrevNodeRef&lt;T&gt; = ParentRc&lt;RefCell&lt;Node&lt;T&gt;&gt;&gt;;
 
 <span class="doccomment">/// Node is a tree data structure element which can either be a `Leaf` (holding just a value, and it's parent reference)
 /// or `Parent` (holding reference to children, parent, and value)
@@ -641,6 +733,15 @@
 /// ## Layout
 /// ```text    
 ///   (1 bytes)   (3 bytes)   (n bytes)            (8 bytes)                            (24 bytes)
+/// ┌───────────┬───────────┬───────────┬────────────────────────────────────┬────────────────────────────────────────┐
+/// │  Discrimt │  Padding  │     T     │      Option&lt;ParentNodeRef&lt;T&gt;&gt;      │             Vec&lt;NodeRef&lt;T&gt;&gt;            │
+/// └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+/// ```
+/// 
+/// 
+/// ## `no_std` Layout
+/// ```text    
+///   (1 bytes)   (3 bytes)   (n bytes)            (8 bytes)                            (24 bytes)
 /// ┌───────────┬───────────┬───────────┬──────────────────────────────┬────────────────────────────────────────┐
 /// │  Discrimt │  Padding  │     T     │      Option&lt;NodeRef&lt;T&gt;&gt;      │             Vec&lt;NodeRef&lt;T&gt;&gt;            │
 /// └───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -656,12 +757,12 @@
 #[repr(u8)]
 </span><span class="kw">pub enum </span>Node&lt;T&gt; {
     Leaf {
-        prev: <span class="prelude-ty">Option</span>&lt;NodeRef&lt;T&gt;&gt;,
+        prev: <span class="prelude-ty">Option</span>&lt;PrevNodeRef&lt;T&gt;&gt;,
         value: T,
     },
     Parent {
         value: T,
-        prev: <span class="prelude-ty">Option</span>&lt;NodeRef&lt;T&gt;&gt;,
+        prev: <span class="prelude-ty">Option</span>&lt;PrevNodeRef&lt;T&gt;&gt;,
         next: Vec&lt;NodeRef&lt;T&gt;&gt;,
     },
 }
@@ -670,7 +771,7 @@
 <span class="kw">where
     </span>T: Debug,
 {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Leaf { value, .. } =&gt; f.debug_struct(<span class="string">"Leaf"</span>).field(<span class="string">"value"</span>, value).finish(),
             <span class="self">Self</span>::Parent { value, prev, next } =&gt; f
@@ -687,7 +788,7 @@
 <span class="kw">where
     </span>T: Debug,
 {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Leaf { value, .. } =&gt; <span class="macro">write!</span>(f, <span class="string">"Leaf({:?})"</span>, value),
             <span class="self">Self</span>::Parent { value, prev, next } =&gt; <span class="macro">write!</span>(
@@ -701,10 +802,13 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T&gt; Node&lt;T&gt; {
-   
+<span class="kw">impl</span>&lt;T&gt; Node&lt;T&gt;
+<span class="kw">where
+    </span>T: Debug,
+{
     <span class="doccomment">/// Create [`Node::Parent`] instance
     </span><span class="attr">#[inline]
+    #[instrument(level = <span class="string">"trace"</span>)]
     </span><span class="kw">pub fn </span>parent(value: T) -&gt; NodeRef&lt;T&gt; {
         Rc::new(RefCell::new(Node::Parent {
             value,
@@ -715,15 +819,22 @@
 
     <span class="doccomment">/// Create [`Node::Leaf`] instance
     </span><span class="attr">#[inline]
+    #[instrument(level = <span class="string">"trace"</span>)]
     </span><span class="kw">pub fn </span>leaf(value: T, prev: <span class="prelude-ty">Option</span>&lt;NodeRef&lt;T&gt;&gt;) -&gt; NodeRef&lt;T&gt; {
-        Rc::new(RefCell::new(Node::Leaf { value, prev }))
+        Rc::new(RefCell::new(Node::Leaf {
+            value,
+            <span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
+            </span>prev: prev.map(|p| Rc::downgrade(<span class="kw-2">&amp;</span>p)),
+            <span class="attr">#[cfg(not(feature = <span class="string">"std"</span>))]
+            </span>prev,
+        }))
     }
 
     <span class="doccomment">/// Converts a [`Node::Leaf`] node into a [`Node::Parent`] node with an initial child.
     ///
     /// # Parameters:
     /// - `parent`: A reference-counted node that will be converted.
-    /// - `node`: A reference-counted node that 
+    /// - `node`: A reference-counted node that
     ///
     /// # Return:
     /// - Result where on success empty tuple, and [`NodeError::ParentUpgradeNotAllowed`] if the node is already a [`Node::Parent`].
@@ -737,9 +848,10 @@
     /// Node::upgrade(&amp;leaf, &amp;child)?;
     /// ```
     </span><span class="attr">#[inline]
+    #[instrument(level = <span class="string">"trace"</span>)]
     </span><span class="kw">pub fn </span>upgrade(parent: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;, node: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt;
     <span class="kw">where
-        </span>T: Default + Clone,
+        </span>T: Debug + Default + Clone,
     {
         parent.borrow_mut().upgrade_inner(node)
     }
@@ -751,12 +863,12 @@
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Leaf { value, prev } =&gt; {
                 <span class="comment">// we have a mutable refrence of T, to which we need to
-                </span><span class="kw">let </span>leaf_value = std::mem::take(value);
-                <span class="kw">let </span>prev = std::mem::take(prev);
+                </span><span class="kw">let </span>leaf_value = mem::take(value);
+                <span class="kw">let </span>prev = mem::take(prev);
                 <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self</span>::Parent {
                     value: leaf_value,
                     prev,
-                    next: <span class="macro">vec!</span>[node.clone()],
+                    next: <span class="macro">vec!</span>[Rc::clone(node)],
                 };
                 <span class="prelude-val">Ok</span>(())
             }
@@ -768,9 +880,9 @@
     ///
     /// ### Parameters
     /// `node`: refrence count to the orginal node that will be downgraded to [`Node::Leaf`]
-    /// 
+    ///
     /// ### Return
-    /// Result of an empty tuple on success and 
+    /// Result of an empty tuple on success and
     /// [`NodeError::DowngradeNotParent`] if the node is already a [`Node::Leaf`],
     /// and [`NodeError::IllegalDowngradeWithChildren`] if node is still has children.
     ///
@@ -785,9 +897,10 @@
     /// Node::pop(&amp;child, &amp;gc)?;
     /// ```
     </span><span class="attr">#[inline]
-    </span><span class="kw">fn </span>downgrade(node: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt;
+    #[instrument(level = <span class="string">"trace"</span>)]
+    </span><span class="kw">pub fn </span>downgrade(node: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt;
     <span class="kw">where
-        </span>T: Default,
+        </span>T: Default + Debug,
     {
         node.borrow_mut().downgrade_inner()
     }
@@ -804,8 +917,8 @@
                     <span class="kw">return </span><span class="prelude-val">Err</span>(NodeError::IllegalDowngradeWithChildren(children));
                 }
 
-                <span class="kw">let </span>parent_value = std::mem::take(value);
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = prev.take() {
+                    <span class="kw">let </span>parent_value = mem::take(value);
                     <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self</span>::Leaf {
                         prev: <span class="prelude-val">Some</span>(parent),
                         value: parent_value,
@@ -821,7 +934,6 @@
 }
 
 <span class="kw">impl</span>&lt;T&gt; Node&lt;T&gt; {
-   
     <span class="doccomment">/// Check if node is specific [`Node::Parent`] instance that classify a root node.
     /// ### Classify A Root
     /// - prev is None
@@ -870,7 +982,7 @@
         }
     }
 
-    <span class="doccomment">/// ### Return 
+    <span class="doccomment">/// ### Return
     /// - `bool` that checks if Node instance has children
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>has_children(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
@@ -890,7 +1002,7 @@
         }
     }
 
-    <span class="doccomment">/// ### Return 
+    <span class="doccomment">/// ### Return
     /// - list of [`NodeRef&lt;T&gt;`]
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>children(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[NodeRef&lt;T&gt;] {
@@ -919,7 +1031,7 @@
     <span class="doccomment">/// ### Returns
     /// - Cloned refrence of the parent node.
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>prev(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;NodeRef&lt;T&gt;&gt; {
+    </span><span class="kw">pub fn </span>prev(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;PrevNodeRef&lt;T&gt;&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Parent { prev, .. } =&gt; prev.clone(),
             <span class="self">Self</span>::Leaf { prev, .. } =&gt; prev.clone(),
@@ -929,21 +1041,25 @@
     <span class="doccomment">/// ### Return
     /// Assert a cloned refrence of the parent node, or else return [`NodeError::ParentNodeNotFound`].
     </span><span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>expect_prev(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;NodeRef&lt;T&gt;, NodeError&gt; {
+    </span><span class="kw">pub fn </span>expect_prev(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;PrevNodeRef&lt;T&gt;, NodeError&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Parent { prev, .. } =&gt; prev.clone().ok_or(NodeError::ParentNodeNotFound),
             <span class="self">Self</span>::Leaf { prev, .. } =&gt; prev.clone().ok_or(NodeError::ParentNodeNotFound),
         }
     }
+
 }
 
-<span class="kw">impl</span>&lt;T&gt; Node&lt;T&gt; {
+<span class="kw">impl</span>&lt;T&gt; Node&lt;T&gt;
+<span class="kw">where
+    </span>T: Debug + Default + Clone,
+{
     <span class="doccomment">/// Insert [`Node`] with value T within the [`Node`]
     ///
     /// ### Parameters
-    /// - `parent`: A refrence to the Node to which will add child to. 
+    /// - `parent`: A refrence to the Node to which will add child to.
     /// - `value`: A generic value type.
-    /// 
+    ///
     /// ### Return
     /// - Result of a [`NodeRef&lt;T&gt;`] to the newly inserted child node, or [`NodeError::ParentUpgradeNotAllowed`] if the node is already a `Parent`.
     ///
@@ -954,19 +1070,77 @@
     /// let _ = Node::insert(child1, 3)?;
     /// let _ = Node::insert(child1, 4)?;
     /// ```
-    </span><span class="kw">pub fn </span>insert(parent: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;, value: T) -&gt; <span class="prelude-ty">Result</span>&lt;NodeRef&lt;T&gt;, NodeError&gt;
-    <span class="kw">where
-        </span>T: Default + Clone + Copy,
-    {
-        Node::inner_insert(parent, value)
+    </span><span class="attr">#[instrument(level = <span class="string">"info"</span>)]
+    </span><span class="kw">pub fn </span>insert(parent: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;, value: T) -&gt; <span class="prelude-ty">Result</span>&lt;NodeRef&lt;T&gt;, NodeError&gt; {
+        <span class="kw">let </span>node = Node::leaf(value, <span class="prelude-val">Some</span>(Rc::clone(parent)));
+        Node::inner_insert(parent, <span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(node)
     }
 
-    <span class="kw">fn </span>inner_insert(parent: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;, value: T) -&gt; <span class="prelude-ty">Result</span>&lt;NodeRef&lt;T&gt;, NodeError&gt;
-    <span class="kw">where
-        </span>T: Default + Clone + Copy,
-    {
-        <span class="comment">// Create the new child node with a reference to its parent
-        </span><span class="kw">let </span>node = Node::leaf(value, <span class="prelude-val">Some</span>(parent.clone()));
+    <span class="doccomment">/// Insert [`NodeRef`] within the prarent [`NodeRef`]`
+    /// 
+    /// ### Parameters
+    /// - `parent`: A refrence to the Node to which will add child to.
+    /// - `node`: A referecne to child node.
+    /// 
+    /// ### Return
+    /// - Result of a empty tuple, or [`NodeError`] 
+    /// 
+    /// ### Example
+    /// ```
+    /// let root = Node::parent(1);
+    /// // allocat memeory for child with no parent
+    /// let child = Node::leaf(2, None);
+    /// 
+    /// // insert the child into the parent root node
+    /// let _ = Node::insert_node(&amp;root, &amp;child)?;
+    /// ```
+    </span><span class="attr">#[instrument(level = <span class="string">"info"</span>)]
+    #[cfg(feature = <span class="string">"std"</span>)]
+    </span><span class="kw">pub fn </span>insert_node(parent: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;, node: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt;  {
+        <span class="kw">let </span><span class="kw-2">mut </span>n = node.borrow_mut();
+        <span class="kw">match </span><span class="kw-2">&amp;mut *</span>n {
+            Node::Leaf { prev, ..} | Node::Parent { prev, .. } =&gt; {
+                <span class="kw-2">*</span>prev = <span class="prelude-val">Some</span>(NodeRef::downgrade(parent));
+            }
+        }
+        Node::inner_insert(parent, node)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Insert [`NodeRef`] within the prarent [`NodeRef`]`
+    /// 
+    /// ### Parameters
+    /// - `parent`: A refrence to the Node to which will add child to.
+    /// - `node`: A referecne to child node.
+    /// 
+    /// ### Return
+    /// - Result of a empty tuple, or [`NodeError`] 
+    /// 
+    /// ### Example
+    /// ```
+    /// let root = Node::parent(1);
+    /// // allocat memeory for child with no parent
+    /// let child = Node::leaf(2, None);
+    /// 
+    /// // insert the child into the parent root node
+    /// let _ = Node::insert_node(&amp;root, &amp;child)?;
+    /// ```
+    </span><span class="attr">#[instrument(level = <span class="string">"info"</span>)]
+    #[cfg(not(feature = <span class="string">"std"</span>))]
+    </span><span class="kw">pub fn </span>insert_node(parent: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;, node: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt;  {
+        <span class="kw">let </span><span class="kw-2">mut </span>n = node.borrow_mut();
+        <span class="kw">match </span><span class="kw-2">&amp;mut *</span>n {
+            Node::Leaf { prev, ..} | Node::Parent { prev, .. } =&gt; {
+                <span class="kw-2">*</span>prev = <span class="prelude-val">Some</span>(NodeRef::clone(parent));
+            }
+        }
+        Node::inner_insert(parent, node)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
+    }
+
+
+    <span class="kw">fn </span>inner_insert(parent: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;, node: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
 
         <span class="kw">let </span><span class="kw-2">mut </span>p = parent.borrow_mut();
         <span class="comment">// Get mutable access to the parent
@@ -974,28 +1148,29 @@
             Node::Leaf { .. } =&gt; {
                 drop(p);
                 <span class="comment">// If parent is a leaf, upgrade it to a parent and add this node as a child
-                </span>Node::upgrade(parent, <span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
+                </span>Node::upgrade(parent, node)<span class="question-mark">?</span>;
             }
             Node::Parent { next, .. } =&gt; {
                 <span class="comment">// If parent is already a parent, just add this node to its children
-                </span>next.push(node.clone());
+                </span>next.push(Rc::clone(node));
             }
         }
 
         <span class="comment">// Return the new child node
-        </span><span class="prelude-val">Ok</span>(node)
+        </span><span class="prelude-val">Ok</span>(())
     }
+
 
     <span class="doccomment">/// Removes a child node from its parent [`Node::Parent`].
     ///
     /// ### Parameters
-    /// - `parent`: A refrence to the Node to which will add child to. 
+    /// - `parent`: A refrence to the Node to which will add child to.
     /// - `child`: A reference to the child node to be removed.
     ///
     /// ### Returns
     /// - A result of a [`bool`]: where `true` If the child was successfully removed.
-    /// and `false` If the child was not found among this node's children.
-    /// 
+    ///   and `false` If the child was not found among this node's children.
+    ///
     /// If removing the child results in an empty parent, the parent **downgrades** into a [`Node::Leaf`].
     ///
     /// # Example
@@ -1007,6 +1182,7 @@
     /// let result = Node::pop(&amp;child, &amp;grand_child)?;
     /// assert!(result); // Successfully removed
     /// ```
+    </span><span class="attr">#[instrument(level = <span class="string">"trace"</span>)]
     </span><span class="kw">pub fn </span>pop(parent: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;, child: <span class="kw-2">&amp;</span>NodeRef&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;bool, NodeError&gt;
     <span class="kw">where
         </span>T: Default + Clone + Copy,
@@ -1058,128 +1234,40 @@
     }
 }
 
-<span class="attr">#[cfg(test)]
-</span><span class="kw">mod </span>test {
-
-    <span class="kw">use crate</span>::{Node, NodeRef, error::NodeError};
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>node_parent_creation_root() {
-        <span class="kw">let </span>node: NodeRef&lt;bool&gt; = Node::parent(<span class="bool-val">true</span>);
-        <span class="macro">assert!</span>(node.borrow().is_root())
+<span class="kw">impl</span>&lt;T&gt; Node&lt;T&gt; {
+    <span class="kw">pub fn </span>iter(node: NodeRef&lt;T&gt;) -&gt; NodeIter&lt;T&gt; {
+        NodeIter::new(node)
     }
+}
 
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>node_parent_creation_leaf() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
-        
-        <span class="kw">let </span>parent = Node::parent(<span class="bool-val">true</span>);
-        <span class="kw">let </span>node = Node::leaf(<span class="bool-val">true</span>, <span class="prelude-val">Some</span>(parent.clone()));
-        <span class="kw">let </span>root_ref = parent.borrow();
-        <span class="kw">let </span>node_ref = node.borrow();
-        <span class="macro">assert!</span>(node_ref.is_leaf() &amp;&amp; node_ref.prev().unwrap().borrow().value() == root_ref.value());
-        <span class="prelude-val">Ok</span>(())
+<span class="kw">pub struct </span>NodeIter&lt;T&gt; {
+    queue: Vec&lt;NodeRef&lt;T&gt;&gt;,
+}
+
+<span class="kw">impl</span>&lt;T&gt; NodeIter&lt;T&gt; {
+    <span class="kw">pub fn </span>new(node: NodeRef&lt;T&gt;) -&gt; NodeIter&lt;T&gt; {
+        <span class="kw">let </span>queue = <span class="macro">vec!</span>[node];
+        NodeIter { queue }
     }
+}
+<span class="kw">impl</span>&lt;T&gt; Iterator <span class="kw">for </span>NodeIter&lt;T&gt; {
+    <span class="kw">type </span>Item = NodeRef&lt;T&gt;;
 
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>node_root_chidren_has_no_children() {
-        <span class="kw">let </span>root = Node::parent(<span class="bool-val">true</span>);
-        <span class="macro">assert!</span>(!root.borrow().has_children())
-    }
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(item) = <span class="self">self</span>.queue.get(<span class="number">0</span>).cloned() {
+            <span class="self">self</span>.queue.remove(<span class="number">0</span>); <span class="comment">// Remove first element (FIFO)
 
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>exception_non_root_check() {
-        <span class="kw">let </span>root = Node::parent(<span class="bool-val">true</span>);
-        <span class="macro">assert!</span>(root.borrow().expect_root().is_err())
-    }
+            </span><span class="kw">match </span><span class="kw-2">&amp;*</span>item.borrow() {
+                Node::Parent { next, .. } =&gt; {
+                    <span class="self">self</span>.queue.extend(next.clone()); <span class="comment">// Add children to queue
+                </span>}
+                <span class="kw">_ </span>=&gt; {}
+            }
 
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_insertion() -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
-        <span class="kw">let </span>root: NodeRef&lt;u8&gt; = Node::parent(<span class="number">1</span>);
-        <span class="kw">let _ </span>= Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">2</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>child = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">3</span>)<span class="question-mark">?</span>;
-        <span class="kw">let _ </span>= Node::insert(<span class="kw-2">&amp;</span>child.clone(), <span class="number">4</span>)<span class="question-mark">?</span>;
-
-        <span class="comment">// First, let's check that root has two children
-        </span><span class="macro">assert_eq!</span>(root.borrow().children().len(), <span class="number">2</span>);
-
-        <span class="comment">// Then check that the first child's value is 2
-        </span><span class="macro">assert_eq!</span>(<span class="kw-2">*</span>root.borrow().children()[<span class="number">0</span>].borrow().value(), <span class="number">2</span>);
-
-        <span class="comment">// Check that the second child's value is 3
-        </span><span class="macro">assert_eq!</span>(<span class="kw-2">*</span>root.borrow().children()[<span class="number">1</span>].borrow().value(), <span class="number">3</span>);
-
-        <span class="comment">// Check that the grandchild's value is 4
-        </span><span class="macro">assert_eq!</span>(<span class="kw-2">*</span>child.borrow().children()[<span class="number">0</span>].borrow().value(), <span class="number">4</span>);
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_pop() -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
-        <span class="kw">let </span>root = Node::parent(<span class="number">1</span>);
-        <span class="kw">let </span>child = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">2</span>)<span class="question-mark">?</span>;
-        <span class="kw">let _ </span>= Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">4</span>)<span class="question-mark">?</span>;
-
-        <span class="macro">assert!</span>(root.borrow().children().len() == <span class="number">2</span>);
-        <span class="kw">let _ </span>= Node::pop(<span class="kw-2">&amp;</span>root, <span class="kw-2">&amp;</span>child);
-        <span class="macro">assert!</span>(child.borrow().prev().is_none());
-        <span class="macro">assert!</span>(root.borrow().children().len() == <span class="number">1</span>); <span class="comment">// Successfully removed
-        </span><span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_pop_non_ref() -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
-        <span class="kw">let </span>root = Node::parent(<span class="number">1</span>);
-        <span class="kw">let _ </span>= Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">2</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>child = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">4</span>)<span class="question-mark">?</span>;
-
-        <span class="kw">let </span>node = Node::leaf(<span class="number">2</span>, <span class="prelude-val">None</span>);
-        <span class="kw">let _ </span>= Node::pop(<span class="kw-2">&amp;</span>root, <span class="kw-2">&amp;</span>node);
-        <span class="macro">assert!</span>(root.borrow().children().len() == <span class="number">2</span>); <span class="comment">// Successfully removed
-        </span><span class="macro">assert!</span>(node.borrow().prev().is_none()); <span class="comment">// Successfully removed
-        </span><span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>donwgrade_test() -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
-        <span class="kw">let </span>root = Node::parent(<span class="number">1</span>);
-        <span class="kw">let </span>child = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">2</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>child2 = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">4</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>gc = Node::insert(<span class="kw-2">&amp;</span>child2, <span class="number">4</span>)<span class="question-mark">?</span>;
-
-        <span class="kw">let </span>p = Node::pop(<span class="kw-2">&amp;</span>child2, <span class="kw-2">&amp;</span>gc)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(child.borrow().is_leaf());
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>upgrade_test() -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>leaf = Node::leaf(<span class="number">42</span>, <span class="prelude-val">None</span>);
-
-        <span class="comment">// insert child node into leaf to make it parent.
-        </span><span class="kw">let </span>child = Node::leaf(<span class="number">100</span>, <span class="prelude-val">Some</span>(leaf.clone()));
-        Node::upgrade(<span class="kw-2">&amp;mut </span>leaf, <span class="kw-2">&amp;</span>child)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(leaf.borrow().is_root());
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>failure_downgrade() {
-        <span class="kw">let </span>leaf = Node::leaf(<span class="number">42</span>, <span class="prelude-val">None</span>);
-        <span class="macro">assert!</span>(Node::downgrade(<span class="kw-2">&amp;</span>leaf) == <span class="prelude-val">Err</span>(NodeError::DowngradeNotParent));
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>failure_downgrade_root_node() {
-        <span class="kw">let </span>root = Node::parent(<span class="number">42</span>);
-        <span class="macro">assert!</span>(Node::downgrade(<span class="kw-2">&amp;</span>root) == <span class="prelude-val">Err</span>(NodeError::RootDowngradeNotAllowed));
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>failure_upgrade_parent() {
-        <span class="kw">let </span>root = Node::parent(<span class="number">42</span>);
-        <span class="kw">let </span>leaf = Node::leaf(<span class="number">101</span>, <span class="prelude-val">Some</span>(root.clone()));
-        <span class="macro">assert!</span>(Node::upgrade(<span class="kw-2">&amp;</span>root, <span class="kw-2">&amp;</span>leaf) == <span class="prelude-val">Err</span>(NodeError::ParentUpgradeNotAllowed));
+            <span class="prelude-val">Some</span>(item)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 }
 </code></pre></div></section></main></body></html>

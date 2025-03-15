@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="   Canopy is a small tree-based data structure implemented in Rust. It provides a way to model hierarchical relationships with two types of nodes: `Node::Parent` and `Node::Leaf`. The structure is defined as follows:"><title>libcanopy - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="libcanopy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../static.files/storage-59e33391.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../libcanopy/index.html">libcanopy</a><span class="version">0.0.3</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#quick-tour" title="Quick Tour">Quick Tour</a><ul><li><a href="#insert" title="Insert">Insert</a></li><li><a href="#pop" title="Pop">Pop</a></li><li><a href="#iterate" title="Iterate">Iterate</a></li></ul></li><li><a href="#features" title="Features">Features</a></li><li><a href="#installation" title="Installation">Installation</a><ul><li><a href="#closing-remarks" title="Closing Remarks">Closing Remarks</a></li></ul></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>libcanopy</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/libcanopy/lib.rs.html#22-187">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p align="center">
+  <picture>
+    <img alt="Canopy" src="https://github.com/LVivona/canopy/blob/main/.github/assets/banner.png?raw=true" style="max-width: 100%;">
+  </picture>
+  <br/>
+  <sub>
+    8-bit Ferris by <a href="https://users.rust-lang.org/t/ferris-as-an-8-bit-sprite/25346">YakoYakoYokuYoku & ryanobeirne</a>
+  </sub>
+  <br/>
+</p>
+ <p align="center">
+    <a href="https://github.com/LVivona/canopy/blob/main/LICENCE.md"><img alt="GitHub" src="https://img.shields.io/badge/licence-MIT Licence-blue"></a>
+</p>
+<p>Canopy is a small tree-based data structure implemented in Rust. It provides a way to model hierarchical relationships with two types of nodes: <code>Node::Parent</code> and <code>Node::Leaf</code>. The structure is defined as follows:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">enum </span>Node&lt;T&gt; {
+    Leaf {
+        prev: <span class="prelude-ty">Option</span>&lt;PrevNodeRef&lt;T&gt;&gt;,
+        value: T,
+    },
+    Parent {
+        value: T,
+        prev: <span class="prelude-ty">Option</span>&lt;PrevNodeRef&lt;T&gt;&gt;,
+        next: Vec&lt;NodeRef&lt;T&gt;&gt;,
+    },
+}</code></pre></div>
+<ul>
+<li><strong><code>Node::Parent</code></strong> nodes hold references to their children and optionally to their parents, along with their value.</li>
+<li><strong><code>Node::Leaf</code></strong> nodes store just a value and do not have any children, making them terminal points in the tree structure. However, leaf nodes may also be able to be upgraded to <strong><code>Node::Parents</code></strong> allowing them to have children.
+<ul>
+<li>std library feature where <code>PrevNodeRef</code>, is <code>Weak&lt;RefCell&lt;T&gt;&gt;</code> while <code>no_std</code> uses <code>rclite::Rc&lt;RefCell&lt;T&gt;&gt;</code>.</li>
+</ul>
+</li>
+</ul>
+<p>Canopy uses Rust’s pattern within to enable shared mutability and ownership, which makes it well-suited for managing dynamic, tree-like data.</p>
+<h3 id="quick-tour"><a class="doc-anchor" href="#quick-tour">§</a>Quick Tour</h3><div class="example-wrap"><pre class="language-mermaid"><code>graph TD;
+    root--&gt;child;
+    root--&gt;child2;
+    child2--&gt;grand_child1;
+    child2--&gt;grand_child2;</code></pre></div>
+<p>To quickly get acquainted with the interface, let’s create a simple graph structure like the one above. We’ll also demonstrate some basic operations available in <code>canopy</code>.</p>
+<h4 id="insert"><a class="doc-anchor" href="#insert">§</a><strong>Insert</strong></h4>
+<p>To build our structure, we start by instantiating the parent node using <code>Node::parent()</code>. This function returns a reference-counted <code>Node::Parent</code>.</p>
+<p>To add children, we pass a reference to the parent node and the value we want to insert. This rule applies recursively to all descendants.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>canopy::{Node, NodeRef, error::NodeError};
+
+<span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
+    <span class="kw">let </span>root: NodeRef&lt;u8&gt; = Node::parent(<span class="number">1</span>);
+    
+    <span class="comment">// `child` is now a Node::Leaf that points to `root`.
+    </span><span class="kw">let </span>child: NodeRef&lt;u8&gt; = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">2</span>)<span class="question-mark">?</span>;
+    <span class="comment">// `child2` is now a Node::Leaf that points to `root`.
+    </span><span class="kw">let </span>child2: NodeRef&lt;u8&gt; = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">3</span>)<span class="question-mark">?</span>;
+
+    <span class="comment">// `child2` is upgraded to Node::Parent that points to `root`,
+    // and has `grand_child1` as a child.
+    </span><span class="kw">let </span>grand_child1: NodeRef&lt;u8&gt; = Node::insert(<span class="kw-2">&amp;</span>child2, <span class="number">4</span>)<span class="question-mark">?</span>;
+    <span class="comment">// `grand_child2` is added as another child of `child2`.
+    </span><span class="kw">let </span>grand_child2: NodeRef&lt;u8&gt; = Node::insert(<span class="kw-2">&amp;</span>child2, <span class="number">5</span>)<span class="question-mark">?</span>;
+    
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<h4 id="pop"><a class="doc-anchor" href="#pop">§</a><strong>Pop</strong></h4>
+<p>The <code>pop</code> operation removes a child node from its parent. If all children are removed, the parent node is downgraded back to a <code>Node::Leaf</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
+    <span class="comment">// Assume nodes are created as shown in the previous example.
+    
+    </span>Node::pop(<span class="kw-2">&amp;</span>child2, <span class="kw-2">&amp;</span>grand_child1)<span class="question-mark">?</span>;
+    Node::pop(<span class="kw-2">&amp;</span>child2, <span class="kw-2">&amp;</span>grand_child2)<span class="question-mark">?</span>;
+    
+    <span class="comment">// Both children of `child2` have been removed,
+    // so `child2` downgrades back to a `Node::Leaf`.
+    
+    </span><span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<h4 id="iterate"><a class="doc-anchor" href="#iterate">§</a><strong>Iterate</strong></h4>
+<p>We can iterate over the nodes using <code>Node::iter()</code>. This allows us to traverse the tree structure.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>canopy::{Node, NodeRef, NodeIter};
+
+<span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), NodeError&gt; {
+    <span class="kw">let </span>root: NodeRef&lt;u8&gt; = Node::parent(<span class="number">1</span>);
+    <span class="kw">let </span>child: NodeRef&lt;u8&gt; = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">2</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>child2: NodeRef&lt;u8&gt; = Node::insert(<span class="kw-2">&amp;</span>root, <span class="number">3</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>grand_child1: NodeRef&lt;u8&gt; = Node::insert(<span class="kw-2">&amp;</span>child2, <span class="number">4</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>grand_child2: NodeRef&lt;u8&gt; = Node::insert(<span class="kw-2">&amp;</span>child2, <span class="number">5</span>)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>nodes: NodeIter&lt;u8&gt; = Node::iter(root.clone());
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(node) = nodes.next() {
+        <span class="comment">// order printed out: 1, 2, 3, 4, 5
+        </span><span class="macro">println!</span>(<span class="string">"{}"</span>, node.borrow().value());
+    }
+    
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<h3 id="features"><a class="doc-anchor" href="#features">§</a>Features</h3>
+<ul>
+<li>Tree-based structure with mutable and shared ownership via <code>Rc&lt;RefCell&lt;T&gt;&gt;</code>, and <code>Weak&lt;RefCell&lt;T&gt;&gt;</code>.</li>
+<li>Ability to model both parent-child relationships.</li>
+<li>Safety-focused code development, on trying to adhering to the “Power of 10” rules for safety-critical systems.</li>
+<li>Iter though using a BFS data-type <code>NodeIter&lt;T&gt;</code></li>
+<li>Supports <code>#[no_std]</code></li>
+</ul>
+<h3 id="installation"><a class="doc-anchor" href="#installation">§</a>Installation</h3>
+<p>To use Canopy in your project, add it to your <code>Cargo.toml</code>:</p>
+<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+# Git version
+# libcanopy = { git = &quot;https://github.com/LVivona/canopy&quot;, branch = &quot;main&quot; }
+# Cargo.io version
+libcanopy = { version = &quot;*&quot; }
+
+</code></pre></div><h4 id="closing-remarks"><a class="doc-anchor" href="#closing-remarks">§</a>Closing Remarks</h4>
+<p>This project is also a personal experiment to apply best practices in developing safety-critical code. By adhering to the “Power of 10” rules for writing safe and reliable systems, the goal is to create robust, memory-safe code while exploring the depths of Rust’s safety features.</p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="error/index.html" title="mod libcanopy::error">error</a></div></li></ul><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.Node.html" title="enum libcanopy::Node">Node</a></div><div class="desc docblock-short">Node is a tree data structure element which can either be a <code>Leaf</code> (holding just a value, and it’s parent reference)
+or <code>Parent</code> (holding reference to children, parent, and value)</div></li></ul><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="type" href="type.NodeRef.html" title="type libcanopy::NodeRef">NodeRef</a></div><div class="desc docblock-short">A reference-counted, mutable reference to a <code>Node&lt;T&gt;</code>.
+This allows multiple parts of the program to hold the node, and
+share ownership of the original, while ensuring interior mutability.</div></li></ul></section></div></main></body></html>
