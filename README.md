@@ -130,7 +130,11 @@ To use Canopy in your project, add it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-canopy = { git = "https://github.com/LVivona/canopy", branch = "main" }
+# Git version
+# libcanopy = { git = "https://github.com/LVivona/canopy", branch = "main" }
+# Cargo.io version
+libcanopy = { version = "*" }
+
 
 ```
 
