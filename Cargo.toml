@@ -1,5 +1,5 @@
 [package]
-name = "canopy"
+name = "libcanopy"
 version = "0.0.2"
 edition = "2024"
 readme = "README.md"
