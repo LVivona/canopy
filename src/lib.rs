@@ -28,7 +28,7 @@ extern crate alloc;
 pub mod error;
 mod node;
 
-pub use crate::node::{Node, NodeRef};
+pub use crate::node::{Node, NodeRef, PrevNodeRef, NodeIter};
 
 #[cfg(test)]
 mod tests {
