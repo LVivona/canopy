@@ -17,37 +17,35 @@
 
 Canopy is a small tree-based data structure implemented in Rust. It provides a way to model hierarchical relationships with two types of nodes: `Node::Parent` and `Node::Leaf`. The structure is defined as follows:
 
+<p align="center">
+
 ```rust
 enum Node<T> {
     Leaf {
-        prev: Option<NodeRef<T>>,
+        prev: Option<PrevNodeRef<T>>,
         value: T,
     },
     Parent {
         value: T,
-        prev: Option<NodeRef<T>>,
+        prev: Option<PrevNodeRef<T>>,
         next: Vec<NodeRef<T>>,
     },
 }
 ```
+- **`Node::Parent`** nodes hold references to their children and optionally to their parents, along with their value.
+- **`Node::Leaf`** nodes store just a value and do not have any children, making them terminal points in the tree structure. However, leaf nodes may also be able to be upgraded to **`Node::Parents`** allowing them to have children.
+  - std library feature where ``PrevNodeRef``, is ``Weak<RefCell<T>>`` while `no_std` uses `rclite::Rc<RefCell<T>>`.
 
-- **`Node::Parent`** nodes hold references to their children and optionally to their parents, along with their own value.
-- **`Node::Leaf`** nodes store just a value and do not have any children, making them terminal points in the tree structure. Though leaf nodes may also be able to be upgraded to **`Node::Parents`** allowing them to have children.
-
-Canopy uses Rust’s `Rc<RefCell<T>>` pattern to enable shared mutability and ownership, which makes it well-suited for managing dynamic, tree-like data.
+Canopy uses Rust’s pattern within to enable shared mutability and ownership, which makes it well-suited for managing dynamic, tree-like data.
 
 ## Features
 
-- Tree-based structure with mutable and shared ownership via `Rc<RefCell<T>>`.
-- Ability to model both parent-child relationships and isolated leaf nodes.
-- Safety-focused code development, adhering to the "Power of 10" rules for safety-critical systems.
-
-### Future Features
-
-- [x] Implement tracing
-- [x] Support `#[no_std]`
-- [ ] Implement `Box` pattern
-- [x] Iter ``NodeIter<T>``
+- Tree-based structure with mutable and shared ownership via `Rc<RefCell<T>>`, and `Weak<RefCell<T>>`.
+- Ability to model both parent-child relationships.
+- Safety-focused code development, on trying to adhering to the "Power of 10" rules for safety-critical systems.
+- Iter though using a BFS data-type `NodeIter<T>`
+- Supports `#[no_std]`
+- Allow tracing debugging
 
 ## Installation
 
@@ -56,11 +54,9 @@ To use Canopy in your project, add it to your `Cargo.toml`:
 ```toml
 [dependencies]
 canopy = { git = "https://github.com/LVivona/canopy", branch = "main" }
-
 ```
 
 ## Example
-
 
 ### Insert
 
@@ -73,6 +69,7 @@ graph TD;
     child2-->grand_child1;
     child2-->grand_child2;
 ```
+
 ```rust
 use canopy::{Node, NodeRef};
 
@@ -90,6 +87,7 @@ let grand_child2 : NodeRef<u8> = Node::insert(&child2, 5)?;
 ```
 
 ### Pop
+
 ```rust
 // above code..
 Node::pop(&child2, &grand_child1)?;

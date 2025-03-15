@@ -7,7 +7,9 @@ use core::{
     fmt,
     fmt::{Debug, Display},
     mem,
+    iter::Iterator
 };
+use alloc::vec;
 #[cfg(not(feature = "std"))]
 use rclite::Rc;
 use tracing::instrument;
@@ -18,11 +20,11 @@ use alloc::vec::Vec;
 #[cfg(feature = "std")]
 use std::{
     cell::RefCell,
-    collections::VecDeque,
     fmt,
     fmt::{Debug, Display},
     mem,
-    rc::Rc,
+    rc::{Rc, Weak},
+    iter::Iterator
 };
 
 /// A reference-counted, mutable reference to a `Node<T>`.
@@ -36,9 +38,36 @@ use std::{
 ///
 /// # Example:
 /// ```
-/// let node: NodeRef<i32> = Node::leaf(42, None).to_ref();
+/// let node: NodeRef<i32> = Node::leaf(42, None);
 /// ```
 pub type NodeRef<T> = Rc<RefCell<Node<T>>>;
+
+#[cfg(not(feature = "std"))]
+pub type ParentRc<T> = Rc<T>;
+
+#[cfg(feature = "std")]
+pub type ParentRc<T> = Weak<T>;
+
+
+/// A reference-counted specifically to it's parent
+///
+///
+///  ### `no_std`
+/// [`Rc<RefCell<Node<T>>>`] is used because:
+/// - [`Rc<T>`] enables multiple owners.
+/// - [`RefCell<T>`] allows for interior mutability.
+///
+///  ### `std`
+/// [`Weak<RefCell<Node<T>>>`] is used because:
+/// - [`Weak<T>`] non-owning reference.
+/// - [`RefCell<T>`] allows for interior mutability, in case we upgrade [`Weak`] to [`Rc`].
+///
+/// 
+/// # Example:
+/// ```
+/// let node: NodeRef<i32> = Node::leaf(42, None);
+/// ```
+pub type PrevNodeRef<T> = ParentRc<RefCell<Node<T>>>;
 
 /// Node is a tree data structure element which can either be a `Leaf` (holding just a value, and it's parent reference)
 /// or `Parent` (holding reference to children, parent, and value)
@@ -68,6 +97,15 @@ pub type NodeRef<T> = Rc<RefCell<Node<T>>>;
 /// ## Layout
 /// ```text    
 ///   (1 bytes)   (3 bytes)   (n bytes)            (8 bytes)                            (24 bytes)
+/// ┌───────────┬───────────┬───────────┬────────────────────────────────────┬────────────────────────────────────────┐
+/// │  Discrimt │  Padding  │     T     │      Option<ParentNodeRef<T>>      │             Vec<NodeRef<T>>            │
+/// └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+/// ```
+/// 
+/// 
+/// ## `no_std` Layout
+/// ```text    
+///   (1 bytes)   (3 bytes)   (n bytes)            (8 bytes)                            (24 bytes)
 /// ┌───────────┬───────────┬───────────┬──────────────────────────────┬────────────────────────────────────────┐
 /// │  Discrimt │  Padding  │     T     │      Option<NodeRef<T>>      │             Vec<NodeRef<T>>            │
 /// └───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -83,12 +121,12 @@ pub type NodeRef<T> = Rc<RefCell<Node<T>>>;
 #[repr(u8)]
 pub enum Node<T> {
     Leaf {
-        prev: Option<NodeRef<T>>,
+        prev: Option<PrevNodeRef<T>>,
         value: T,
     },
     Parent {
         value: T,
-        prev: Option<NodeRef<T>>,
+        prev: Option<PrevNodeRef<T>>,
         next: Vec<NodeRef<T>>,
     },
 }
@@ -147,7 +185,13 @@ where
     #[inline]
     #[instrument(level = "trace")]
     pub fn leaf(value: T, prev: Option<NodeRef<T>>) -> NodeRef<T> {
-        Rc::new(RefCell::new(Node::Leaf { value, prev }))
+        Rc::new(RefCell::new(Node::Leaf {
+            value,
+            #[cfg(feature = "std")]
+            prev: prev.map(|p| Rc::downgrade(&p)),
+            #[cfg(not(feature = "std"))]
+            prev,
+        }))
     }
 
     /// Converts a [`Node::Leaf`] node into a [`Node::Parent`] node with an initial child.
@@ -188,7 +232,7 @@ where
                 *self = Self::Parent {
                     value: leaf_value,
                     prev,
-                    next: vec![node.clone()],
+                    next: vec![Rc::clone(node)],
                 };
                 Ok(())
             }
@@ -237,8 +281,8 @@ where
                     return Err(NodeError::IllegalDowngradeWithChildren(children));
                 }
 
-                let parent_value = mem::take(value);
                 if let Some(parent) = prev.take() {
+                    let parent_value = mem::take(value);
                     *self = Self::Leaf {
                         prev: Some(parent),
                         value: parent_value,
@@ -351,7 +395,7 @@ impl<T> Node<T> {
     /// ### Returns
     /// - Cloned refrence of the parent node.
     #[inline]
-    pub fn prev(&self) -> Option<NodeRef<T>> {
+    pub fn prev(&self) -> Option<PrevNodeRef<T>> {
         match self {
             Self::Parent { prev, .. } => prev.clone(),
             Self::Leaf { prev, .. } => prev.clone(),
@@ -361,12 +405,13 @@ impl<T> Node<T> {
     /// ### Return
     /// Assert a cloned refrence of the parent node, or else return [`NodeError::ParentNodeNotFound`].
     #[inline]
-    pub fn expect_prev(&self) -> Result<NodeRef<T>, NodeError> {
+    pub fn expect_prev(&self) -> Result<PrevNodeRef<T>, NodeError> {
         match self {
             Self::Parent { prev, .. } => prev.clone().ok_or(NodeError::ParentNodeNotFound),
             Self::Leaf { prev, .. } => prev.clone().ok_or(NodeError::ParentNodeNotFound),
         }
     }
+
 }
 
 impl<T> Node<T>
@@ -391,12 +436,75 @@ where
     /// ```
     #[instrument(level = "info")]
     pub fn insert(parent: &NodeRef<T>, value: T) -> Result<NodeRef<T>, NodeError> {
-        Node::inner_insert(parent, value)
+        let node = Node::leaf(value, Some(Rc::clone(parent)));
+        Node::inner_insert(parent, &node)?;
+        Ok(node)
     }
 
-    fn inner_insert(parent: &NodeRef<T>, value: T) -> Result<NodeRef<T>, NodeError> {
-        // Create the new child node with a reference to its parent
-        let node = Node::leaf(value, Some(parent.clone()));
+    /// Insert [`NodeRef`] within the prarent [`NodeRef`]`
+    /// 
+    /// ### Parameters
+    /// - `parent`: A refrence to the Node to which will add child to.
+    /// - `node`: A referecne to child node.
+    /// 
+    /// ### Return
+    /// - Result of a empty tuple, or [`NodeError`] 
+    /// 
+    /// ### Example
+    /// ```
+    /// let root = Node::parent(1);
+    /// // allocat memeory for child with no parent
+    /// let child = Node::leaf(2, None);
+    /// 
+    /// // insert the child into the parent root node
+    /// let _ = Node::insert_node(&root, &child)?;
+    /// ```
+    #[instrument(level = "info")]
+    #[cfg(feature = "std")]
+    pub fn insert_node(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError>  {
+        let mut n = node.borrow_mut();
+        match &mut *n {
+            Node::Leaf { prev, ..} | Node::Parent { prev, .. } => {
+                *prev = Some(NodeRef::downgrade(parent));
+            }
+        }
+        Node::inner_insert(parent, node)?;
+        Ok(())
+    }
+
+    /// Insert [`NodeRef`] within the prarent [`NodeRef`]`
+    /// 
+    /// ### Parameters
+    /// - `parent`: A refrence to the Node to which will add child to.
+    /// - `node`: A referecne to child node.
+    /// 
+    /// ### Return
+    /// - Result of a empty tuple, or [`NodeError`] 
+    /// 
+    /// ### Example
+    /// ```
+    /// let root = Node::parent(1);
+    /// // allocat memeory for child with no parent
+    /// let child = Node::leaf(2, None);
+    /// 
+    /// // insert the child into the parent root node
+    /// let _ = Node::insert_node(&root, &child)?;
+    /// ```
+    #[instrument(level = "info")]
+    #[cfg(not(feature = "std"))]
+    pub fn insert_node(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError>  {
+        let mut n = node.borrow_mut();
+        match &mut *n {
+            Node::Leaf { prev, ..} | Node::Parent { prev, .. } => {
+                *prev = Some(NodeRef::clone(parent));
+            }
+        }
+        Node::inner_insert(parent, node)?;
+        Ok(())
+    }
+
+
+    fn inner_insert(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError> {
 
         let mut p = parent.borrow_mut();
         // Get mutable access to the parent
@@ -404,17 +512,18 @@ where
             Node::Leaf { .. } => {
                 drop(p);
                 // If parent is a leaf, upgrade it to a parent and add this node as a child
-                Node::upgrade(parent, &node)?;
+                Node::upgrade(parent, node)?;
             }
             Node::Parent { next, .. } => {
                 // If parent is already a parent, just add this node to its children
-                next.push(node.clone());
+                next.push(Rc::clone(node));
             }
         }
 
         // Return the new child node
-        Ok(node)
+        Ok(())
     }
+
 
     /// Removes a child node from its parent [`Node::Parent`].
     ///
@@ -495,61 +604,24 @@ impl<T> Node<T> {
     }
 }
 
-#[cfg(feature = "std")]
 pub struct NodeIter<T> {
-    queue: VecDeque<NodeRef<T>>,
+    queue: Vec<NodeRef<T>>,
 }
 
-#[cfg(feature = "std")]
 impl<T> NodeIter<T> {
     pub fn new(node: NodeRef<T>) -> NodeIter<T> {
-        let mut queue = VecDeque::new();
-        queue.push_back(node);
+        let queue = vec![node];
         NodeIter { queue }
     }
 }
 
-#[cfg(feature = "std")]
-impl<T> std::iter::Iterator for NodeIter<T> {
-    type Item = NodeRef<T>;
-    fn next(&mut self) -> Option<Self::Item> {
-        if let Some(item) = self.queue.pop_front() {
-            match &*item.clone().borrow() {
-                Node::Parent { next, .. } => {
-                    self.queue.extend(next.clone());
-                    Some(item)
-                }
-                _ => None,
-            }
-        } else {
-            None
-        }
-    }
-}
-
-#[cfg(not(feature = "std"))]
-pub struct NodeIter<T> {
-    stack: Vec<NodeRef<T>>, // Use Vec instead of VecDeque
-}
-
-#[cfg(not(feature = "std"))]
-impl<T> NodeIter<T> {
-    pub fn new(node: NodeRef<T>) -> NodeIter<T> {
-        let mut stack = Vec::new();
-        stack.push(node);
-        NodeIter { stack }
-    }
-}
-
-#[cfg(not(feature = "std"))]
 impl<T> Iterator for NodeIter<T> {
     type Item = NodeRef<T>;
-
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(item) = self.stack.pop() {
-            match &*item.clone().borrow() {
+        if let Some(item) = self.queue.pop() {
+            match &*Rc::clone(&item).borrow() {
                 Node::Parent { next, .. } => {
-                    self.stack.extend(next.clone()); // Push children onto the stack
+                    self.queue.extend(next.clone());
                     Some(item)
                 }
                 _ => None,
