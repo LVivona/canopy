@@ -614,18 +614,21 @@ impl<T> NodeIter<T> {
         NodeIter { queue }
     }
 }
-
 impl<T> Iterator for NodeIter<T> {
     type Item = NodeRef<T>;
+
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(item) = self.queue.pop() {
-            match &*Rc::clone(&item).borrow() {
+        if let Some(item) = self.queue.get(0).cloned() {
+            self.queue.remove(0); // Remove first element (FIFO)
+
+            match &*item.borrow() {
                 Node::Parent { next, .. } => {
-                    self.queue.extend(next.clone());
-                    Some(item)
+                    self.queue.extend(next.clone()); // Add children to queue
                 }
-                _ => None,
+                _ => {}
             }
+
+            Some(item)
         } else {
             None
         }

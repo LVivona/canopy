@@ -106,7 +106,7 @@ fn main() -> Result<(), NodeError> {
     let grand_child1: NodeRef<u8> = Node::insert(&child2, 4)?;
     let grand_child2: NodeRef<u8> = Node::insert(&child2, 5)?;
 
-    let mut nodes: NodeIter<u8> = Node::iter(&root);
+    let mut nodes: NodeIter<u8> = Node::iter(root.clone());
     while let Some(node) = nodes.next() {
         // order printed out: 1, 2, 3, 4, 5
         println!("{}", node.borrow().value());

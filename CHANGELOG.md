@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.3] - 2025-03-15
+
+### 🐛 Bug Fixes
+
+- Iter pattern NodeIter<T>
 
 ## [0.0.2] - 2025-03-15
 

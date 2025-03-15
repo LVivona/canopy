@@ -32,7 +32,7 @@ pub use crate::node::{Node, NodeRef};
 
 #[cfg(test)]
 mod tests {
-    use crate::{Node, NodeRef, error::NodeError};
+    use crate::{error::NodeError, node::NodeIter, Node, NodeRef};
 
     fn assert_parent_eq<T>(parent: &NodeRef<T>, expected_parent: &NodeRef<T>) {
         assert!(NodeRef::ptr_eq(
@@ -165,4 +165,23 @@ mod tests {
         Ok(())
     }
 
+    #[test]
+    fn iter_test() -> Result<(), NodeError> {
+        let root: NodeRef<u8> = Node::parent(1);
+        let _: NodeRef<u8> = Node::insert(&root, 2)?;
+        let child2: NodeRef<u8> = Node::insert(&root, 3)?;
+        let _: NodeRef<u8> = Node::insert(&child2, 4)?;
+        let _: NodeRef<u8> = Node::insert(&child2, 5)?;
+    
+        let mut nodes: NodeIter<u8> = Node::iter(root.clone());
+        let mut count = 1; 
+        while let Some(node) = nodes.next() {
+            // order printed out: 1, 2, 3, 4, 5
+            println!("{}", node.borrow().value());
+            assert!(node.borrow().value() == &count);
+            count += 1;
+        }
+        Ok(())
+        
+    }
 }
