@@ -6,25 +6,25 @@ use core::{
     cell::RefCell,
     fmt,
     fmt::{Debug, Display},
+    iter::Iterator,
     mem,
-    iter::Iterator
 };
-use alloc::vec;
+
 #[cfg(not(feature = "std"))]
 use rclite::Rc;
 use tracing::instrument;
 
 #[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
+use alloc::{self, vec::Vec};
 
 #[cfg(feature = "std")]
 use std::{
     cell::RefCell,
     fmt,
     fmt::{Debug, Display},
+    iter::Iterator,
     mem,
     rc::{Rc, Weak},
-    iter::Iterator
 };
 
 /// A reference-counted, mutable reference to a `Node<T>`.
@@ -48,7 +48,6 @@ pub type ParentRc<T> = Rc<T>;
 #[cfg(feature = "std")]
 pub type ParentRc<T> = Weak<T>;
 
-
 /// A reference-counted specifically to it's parent
 ///
 ///
@@ -62,7 +61,7 @@ pub type ParentRc<T> = Weak<T>;
 /// - [`Weak<T>`] non-owning reference.
 /// - [`RefCell<T>`] allows for interior mutability, in case we upgrade [`Weak`] to [`Rc`].
 ///
-/// 
+///
 /// # Example:
 /// ```
 /// let node: NodeRef<i32> = Node::leaf(42, None);
@@ -101,8 +100,8 @@ pub type PrevNodeRef<T> = ParentRc<RefCell<Node<T>>>;
 /// │  Discrimt │  Padding  │     T     │      Option<ParentNodeRef<T>>      │             Vec<NodeRef<T>>            │
 /// └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 /// ```
-/// 
-/// 
+///
+///
 /// ## `no_std` Layout
 /// ```text    
 ///   (1 bytes)   (3 bytes)   (n bytes)            (8 bytes)                            (24 bytes)
@@ -411,7 +410,6 @@ impl<T> Node<T> {
             Self::Leaf { prev, .. } => prev.clone().ok_or(NodeError::ParentNodeNotFound),
         }
     }
-
 }
 
 impl<T> Node<T>
@@ -442,29 +440,29 @@ where
     }
 
     /// Insert [`NodeRef`] within the prarent [`NodeRef`]`
-    /// 
+    ///
     /// ### Parameters
     /// - `parent`: A refrence to the Node to which will add child to.
     /// - `node`: A referecne to child node.
-    /// 
+    ///
     /// ### Return
-    /// - Result of a empty tuple, or [`NodeError`] 
-    /// 
+    /// - Result of a empty tuple, or [`NodeError`]
+    ///
     /// ### Example
     /// ```
     /// let root = Node::parent(1);
     /// // allocat memeory for child with no parent
     /// let child = Node::leaf(2, None);
-    /// 
+    ///
     /// // insert the child into the parent root node
     /// let _ = Node::insert_node(&root, &child)?;
     /// ```
     #[instrument(level = "info")]
     #[cfg(feature = "std")]
-    pub fn insert_node(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError>  {
+    pub fn insert_node(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError> {
         let mut n = node.borrow_mut();
         match &mut *n {
-            Node::Leaf { prev, ..} | Node::Parent { prev, .. } => {
+            Node::Leaf { prev, .. } | Node::Parent { prev, .. } => {
                 *prev = Some(NodeRef::downgrade(parent));
             }
         }
@@ -473,29 +471,29 @@ where
     }
 
     /// Insert [`NodeRef`] within the prarent [`NodeRef`]`
-    /// 
+    ///
     /// ### Parameters
     /// - `parent`: A refrence to the Node to which will add child to.
     /// - `node`: A referecne to child node.
-    /// 
+    ///
     /// ### Return
-    /// - Result of a empty tuple, or [`NodeError`] 
-    /// 
+    /// - Result of a empty tuple, or [`NodeError`]
+    ///
     /// ### Example
     /// ```
     /// let root = Node::parent(1);
     /// // allocat memeory for child with no parent
     /// let child = Node::leaf(2, None);
-    /// 
+    ///
     /// // insert the child into the parent root node
     /// let _ = Node::insert_node(&root, &child)?;
     /// ```
     #[instrument(level = "info")]
     #[cfg(not(feature = "std"))]
-    pub fn insert_node(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError>  {
+    pub fn insert_node(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError> {
         let mut n = node.borrow_mut();
         match &mut *n {
-            Node::Leaf { prev, ..} | Node::Parent { prev, .. } => {
+            Node::Leaf { prev, .. } | Node::Parent { prev, .. } => {
                 *prev = Some(NodeRef::clone(parent));
             }
         }
@@ -503,9 +501,7 @@ where
         Ok(())
     }
 
-
     fn inner_insert(parent: &NodeRef<T>, node: &NodeRef<T>) -> Result<(), NodeError> {
-
         let mut p = parent.borrow_mut();
         // Get mutable access to the parent
         match &mut *p {
@@ -523,7 +519,6 @@ where
         // Return the new child node
         Ok(())
     }
-
 
     /// Removes a child node from its parent [`Node::Parent`].
     ///
@@ -618,14 +613,11 @@ impl<T> Iterator for NodeIter<T> {
     type Item = NodeRef<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(item) = self.queue.get(0).cloned() {
+        if let Some(item) = self.queue.first().cloned() {
             self.queue.remove(0); // Remove first element (FIFO)
 
-            match &*item.borrow() {
-                Node::Parent { next, .. } => {
-                    self.queue.extend(next.clone()); // Add children to queue
-                }
-                _ => {}
+            if let Node::Parent { next, .. } = &*item.borrow() {
+                self.queue.extend(next.clone()); // Add children to queue
             }
 
             Some(item)

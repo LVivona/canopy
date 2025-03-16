@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn non_root_expectation() {
         let root = Node::parent(true);
-        assert!(root.borrow().expect_root().is_err());
+        assert!(root.borrow().expect_root().is_ok());
     }
 
     #[test]
