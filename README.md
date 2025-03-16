@@ -12,6 +12,11 @@
 
  <p align="center">
     <a href="https://github.com/LVivona/canopy/blob/main/LICENCE.md"><img alt="GitHub" src="https://img.shields.io/badge/licence-MIT Licence-blue"></a>
+    <a href="https://github.com/LVivona/canopy/actions/workflows/rust.yml"><img alt="Action Build" src="https://img.shields.io/github/actions/workflow/status/LVivona/canopy/rust.yml?branch=main"></a>
+   <a href="https://crates.io/crates/libcanopy"><img alt="Crates.io Version" src="https://img.shields.io/crates/v/libcanopy"></a>
+   <a href="https://docs.rs/libcanopy"><img alt="docs.rs" src="https://img.shields.io/badge/rust-docs.rs-blue?logo=rust"></a>
+  
+
 
 </p>
 
