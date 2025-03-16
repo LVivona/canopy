@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.5] - 2025-03-15
+
+### 🐛 Bug Fixes
+
+- expected root, boolean check
+
 ## [0.0.4] - 2025-03-15
 
 ### ⚙️ Miscellaneous Tasks
