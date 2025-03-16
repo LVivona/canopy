@@ -48,7 +48,7 @@ graph TD;
     child2-->grand_child2;
 ```
 
-To quickly get acquainted with the interface, let's create a simple graph structure like the one above. We'll also demonstrate some basic operations available in `canopy`.
+To quickly get acquainted with the interface, let's create a simple graph structure like the one above. We'll also demonstrate some basic operations available in `libcanopy`.
 
 ### **Insert**
 To build our structure, we start by instantiating the parent node using `Node::parent()`. This function returns a reference-counted `Node::Parent`.
@@ -56,7 +56,7 @@ To build our structure, we start by instantiating the parent node using `Node::p
 To add children, we pass a reference to the parent node and the value we want to insert. This rule applies recursively to all descendants.
 
 ```rust
-use canopy::{Node, NodeRef, error::NodeError};
+use libcanopy::{Node, NodeRef, error::NodeError};
 
 fn main() -> Result<(), NodeError> {
     let root: NodeRef<u8> = Node::parent(1);
@@ -97,7 +97,7 @@ fn main() -> Result<(), NodeError> {
 We can iterate over the nodes using `Node::iter()`. This allows us to traverse the tree structure.
 
 ```rust
-use canopy::{Node, NodeRef, NodeIter};
+use libcanopy::{Node, NodeRef, NodeIter};
 
 fn main() -> Result<(), NodeError> {
     let root: NodeRef<u8> = Node::parent(1);
