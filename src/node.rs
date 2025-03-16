@@ -320,7 +320,7 @@ impl<T> Node<T> {
     /// - Result of an empty tuple or [`NodeError::ExpectedARootNode`] if the node is not a root.
     #[inline]
     pub fn expect_root(&self) -> Result<(), NodeError> {
-        if self.is_leaf() {
+        if self.is_root() {
             Ok(())
         } else {
             Err(NodeError::ExpectedARootNode)
